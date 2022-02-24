@@ -5,10 +5,7 @@
  */
 package na.views;
 
-import java.awt.event.KeyListener;
 import javax.swing.JFrame;
-import na.handle.CacheDataLoader;
-import na.handle.InputManager;
 
 /**
  *

@@ -57,7 +57,7 @@ public class Animation {
 
         _frameImages = new ArrayList<>();
         ani._frameImages.forEach(f -> {
-            _frameImages.add(f);
+            _frameImages.add(new FrameImage(f));
         });
     }
 
@@ -173,7 +173,7 @@ public class Animation {
         if (_beginTime == 0) {
             _beginTime = currentTime;
         } else if (currentTime - _beginTime >= _delayFrames.get(_currentFrame)) {
-            nextFrame();            
+            nextFrame();
             _beginTime = currentTime;
         }
 

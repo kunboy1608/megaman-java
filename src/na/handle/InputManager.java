@@ -8,8 +8,7 @@ package na.handle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import na.models.GameWorld;
-import na.models.Megaman;
-import na.views.GamePanel;
+import na.models.Human;
 
 /**
  *
@@ -41,29 +40,29 @@ public class InputManager implements KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                _game.getMegaman().setDirection(Megaman.DIR_LEFT);
-                _game.getMegaman().setSpeedX(-5f);
+                _game.getMegaman().setDirection(Human.LEFT_DIR);
+                _game.getMegaman().run();
                 break;
 
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                _game.getMegaman().setDirection(Megaman.DIR_RIGHT);
-                _game.getMegaman().setSpeedX(5f);
+                _game.getMegaman().setDirection(Human.RIGHT_DIR);
+                _game.getMegaman().run();
 
                 break;
             case KeyEvent.VK_S:
-            case KeyEvent.VK_DOWN:
-                // Xuong duoi
+            case KeyEvent.VK_DOWN:                
+                _game.getMegaman().dick();
                 break;
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
                 // Len tren
-                _game.getMegaman().setSpeedY(-3f);
+                _game.getMegaman().jump();
 
                 break;
             case KeyEvent.VK_SPACE:
                 // Nhay
-                _game.getMegaman().setSpeedY(-3f);
+                _game.getMegaman().attack();
 
                 break;
         }
@@ -74,28 +73,27 @@ public class InputManager implements KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                _game.getMegaman().setSpeedX(0f);
+                _game.getMegaman().stopRun();
                 break;
 
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                _game.getMegaman().setSpeedX(0f);
+                _game.getMegaman().stopRun();
 
                 break;
 
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                // Xuong duoi
+                _game.getMegaman().standUp();
 
                 break;
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
                 // Len tren
-                _game.getMegaman().setSpeedY(0f);
+                
                 break;
             case KeyEvent.VK_SPACE:
-                // Nhay
-                _game.getMegaman().setSpeedY(0f);
+                // Nhay               
                 break;
         }
     }

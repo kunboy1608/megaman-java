@@ -5,6 +5,7 @@
  */
 package na.handle;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,8 +49,8 @@ public class CacheDataLoader {
     }
 
     public void loadData() {
-//        loadFrame();
-//        loadAnimation();
+        loadFrame();
+        loadAnimation();
         loadPhysicalMap();
     }
 
@@ -178,15 +179,14 @@ public class CacheDataLoader {
 
                     while ((line = br.readLine()).equals(""));
                     ani.setName(line);
-
+                    
                     // Doc path 
                     while ((line = br.readLine()).equals(""));
                     String[] str = line.split(" ");
                     for (int j = 0; j < str.length; j += 2) {
                         ani.add(getFrameImage(str[j]), Double.parseDouble(str[j + 1]));
                     }
-
-                    _instance._animations.put(ani.getName(), ani);
+                    _animations.put(ani.getName(), ani);
                 }
             }
             br.close();

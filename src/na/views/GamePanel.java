@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import na.handle.CacheDataLoader;
 import na.handle.InputManager;
 import na.models.GameWorld;
 import na.models.Megaman;
@@ -59,7 +60,7 @@ public class GamePanel extends JPanel implements Runnable {
         // Ve tren buffered                
         _graphicsBuffered.setColor(Color.WHITE);
         _graphicsBuffered.fillRect(0, 0, GameFrame.SCREEN_WIDTH, GameFrame.SCREEN_HEIGHT);
-        _gameWorld.render(_graphicsBuffered);
+        _gameWorld.render(_graphicsBuffered);        
     }
 
     @Override
