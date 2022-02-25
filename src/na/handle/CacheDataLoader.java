@@ -5,13 +5,15 @@
  */
 package na.handle;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
 import na.effects.Animation;
@@ -26,8 +28,8 @@ public class CacheDataLoader {
     private final String _frameFile = "src/na/media/images/frame.txt";
     private final String _animationFile = "src/na/media/images/animation.txt";
     private final String _physMapFile = "src/na/media/images/phys_map.txt";
-    private final String _backGroundMapFile = "scr/na/media/images/background_map.txt";
-    private final String _SoundFile = "scr/na/media/iamges/sounds.txt";
+    private final String _backGroundMapFile = "src/na/media/images/background_map.txt";
+    private final String _SoundFile = "scr/na/media/images/sounds.txt";
 
     private Hashtable<String, FrameImage> _frameImages;
     private Hashtable<String, Animation> _animations;
@@ -52,6 +54,7 @@ public class CacheDataLoader {
         loadFrame();
         loadAnimation();
         loadPhysicalMap();
+        loadBackgroundMap();
     }
 
     public void loadPhysicalMap() {
@@ -179,7 +182,7 @@ public class CacheDataLoader {
 
                     while ((line = br.readLine()).equals(""));
                     ani.setName(line);
-                    
+
                     // Doc path 
                     while ((line = br.readLine()).equals(""));
                     String[] str = line.split(" ");
@@ -193,6 +196,37 @@ public class CacheDataLoader {
 
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+
+    }
+
+    public void loadBackgroundMap() {
+        FileReader fr;
+        try {
+            fr = new FileReader(_backGroundMapFile);
+            BufferedReader br = new BufferedReader(fr);
+
+            String line = null;
+
+            line = br.readLine();
+            int numberOfRows = Integer.parseInt(line);
+            line = br.readLine();
+            int numberOfColumns = Integer.parseInt(line);
+
+            _background_map = new int[numberOfRows][numberOfColumns];
+
+            for (int i = 0; i < numberOfRows; i++) {
+                line = br.readLine();
+                String[] str = line.split(" ");
+                for (int j = 0; j < numberOfColumns; j++) {
+                    _background_map[i][j] = Integer.parseInt(str[j]);
+                }
+            }
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -211,7 +245,7 @@ public class CacheDataLoader {
         return _phys_map;
     }
 
-    public int[][] getBackground_map() {
+    public int[][] getBackgroundMap() {
         return _background_map;
     }
 
