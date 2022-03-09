@@ -20,9 +20,18 @@ public abstract class Bullet extends ParticularModel {
     public abstract void draw(Graphics2D g2);
 
     public void update() {
+
+        //Di chuyen vien dan
         super.update();
         setPosX(getPosX() + getSpeedX());
         setPosY(getPosY() + getSpeedY());
         
+        //Gay damge
+        ParticularModel model = getGameWorld().getParticularModelManager().getCollisionWithEnemyModel(this);
+        if (model != null
+                && model.getState() == ALIVE) {
+            model.beHurt(getDamge());
+            setBlood(0);
+        }
     }
 }

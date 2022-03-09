@@ -12,11 +12,8 @@ import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import na.handle.CacheDataLoader;
 import na.handle.InputManager;
 import na.models.GameWorld;
-import na.models.Megaman;
-import na.models.PhysicalMap;
 
 /**
  *
@@ -58,8 +55,8 @@ public class GamePanel extends JPanel implements Runnable {
         _graphicsBuffered = (Graphics2D) _bufferedImage.getGraphics();
 
         // Ve tren buffered                
-        _graphicsBuffered.setColor(Color.WHITE);
-        _graphicsBuffered.fillRect(0, 0, GameFrame.SCREEN_WIDTH, GameFrame.SCREEN_HEIGHT);
+//        _graphicsBuffered.setColor(Color.WHITE);
+//        _graphicsBuffered.fillRect(0, 0, GameFrame.SCREEN_WIDTH, GameFrame.SCREEN_HEIGHT);
         _gameWorld.render(_graphicsBuffered);        
     }
 

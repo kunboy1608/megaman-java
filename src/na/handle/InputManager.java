@@ -8,6 +8,7 @@ package na.handle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import na.models.GameWorld;
+import static na.models.GameWorld.INTRO_GAME;
 import na.models.Human;
 
 /**
@@ -51,7 +52,7 @@ public class InputManager implements KeyListener {
 
                 break;
             case KeyEvent.VK_S:
-            case KeyEvent.VK_DOWN:                
+            case KeyEvent.VK_DOWN:
                 _game.getMegaman().dick();
                 break;
             case KeyEvent.VK_W:
@@ -64,6 +65,32 @@ public class InputManager implements KeyListener {
                 // Nhay
                 _game.getMegaman().attack();
 
+                break;
+
+            case KeyEvent.VK_ENTER:
+                if (_game.state == GameWorld.PAUSE_GAME
+                        && _game.previousState == GameWorld.PAUSE_GAME) {
+                    _game.switchState(GameWorld.TUTORIAL);
+                } else if (_game.state == GameWorld.TUTORIAL && _game.storyTutorial >= 1) {
+                    if (_game.storyTutorial <= 3) {
+                        _game.storyTutorial++;
+                        _game.currentSize = 1;
+                        _game.textTutorial = _game.texts1[_game.storyTutorial - 1];
+                    } else {
+                        _game.switchState(GameWorld.PLAY_GAME);
+                    }
+
+                    // for meeting boss tutorial
+                    if (_game.tutorialState == GameWorld.MEET_FINAL_BOSS) {
+                        _game.switchState(GameWorld.PLAY_GAME);
+                    }
+                } else {
+
+                    _game.switchState(GameWorld.PLAY_GAME);
+                }
+                break;
+            case KeyEvent.VK_ESCAPE:
+                _game.switchState(GameWorld.PAUSE_GAME);
                 break;
         }
     }
@@ -90,7 +117,7 @@ public class InputManager implements KeyListener {
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
                 // Len tren
-                
+
                 break;
             case KeyEvent.VK_SPACE:
                 // Nhay               

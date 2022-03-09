@@ -40,7 +40,7 @@ public abstract class ParticularModel extends GameModel {
 
     private int _direction;
 
-    protected Animation beHurtForwardAni, beHurtBackAni;
+    protected Animation _beHurtForwardAni, _beHurtBackAni;
 
     private int _teamType;
 
@@ -52,9 +52,10 @@ public abstract class ParticularModel extends GameModel {
         _width = width;
         _height = height;
         _mass = mass;
+        _blood = blood;
     }
 
-    public void beHurt(int damgeEat) {
+    public void beHurt(int damgeEat) {        
         _blood -= damgeEat;
         _state = BEHURT;
         hurtingCallback();
@@ -92,30 +93,45 @@ public abstract class ParticularModel extends GameModel {
         );
     }
 
+    public boolean isObjectOutOfCameraView() {
+        return (getPosX() - getGameWorld().getCamera().getPosX() > getGameWorld().getCamera().getWidthView()
+                || getPosX() - getGameWorld().getCamera().getPosX() < -50
+                || getPosY() - getGameWorld().getCamera().getPosY() > getGameWorld().getCamera().getHeightView()
+                || getPosY() - getGameWorld().getCamera().getPosY() < -50);
+    }
+
     @Override
     public void update() {
         switch (_state) {
             case ALIVE:
-
+                ParticularModel model = getGameWorld().getParticularModelManager().getCollisionWithEnemyModel(this);
+                if (model != null
+                        && model.getDamge() > 0) {
+                    beHurt(model.getDamge());
+                    System.out.println("kimochi");
+                }
                 break;
+
             case BEHURT:
-                if (beHurtBackAni == null) {
+                if (_beHurtBackAni == null) {
                     _state = NOBEHURT;
                     _startTimeNoBeHurt = System.nanoTime();
-                    if (_blood == 0) {
+
+                    if (_blood <= 0) {
                         _state = FEY;
-                    } else {
-                        beHurtForwardAni.update(System.nanoTime());
-                        if (beHurtForwardAni.isLastFrame()) {
-                            beHurtForwardAni.reset();
-                            _state = NOBEHURT;
-                            if (_blood == 0) {
-                                _state = FEY;
-                            }
-                            _startTimeNoBeHurt = System.nanoTime();
+                    }
+                } else {
+                    _beHurtForwardAni.update(System.nanoTime());
+                    if (_beHurtForwardAni.isLastFrame()) {
+                        _beHurtForwardAni.reset();
+                        _state = NOBEHURT;
+                        if (_blood <= 0) {
+                            _state = FEY;
                         }
+                        _startTimeNoBeHurt = System.nanoTime();
                     }
                 }
+
                 break;
             case FEY:
                 _state = DEATH;
@@ -125,6 +141,7 @@ public abstract class ParticularModel extends GameModel {
             case NOBEHURT:
                 if (System.nanoTime() - _startTimeNoBeHurt > _timeForNoBeHurt) {
                     _state = ALIVE;
+                    System.out.println("alive");
                 }
                 break;
             default:

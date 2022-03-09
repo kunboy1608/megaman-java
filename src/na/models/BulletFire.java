@@ -14,33 +14,41 @@ import na.handle.CacheDataLoader;
  * @author hoangdp
  */
 public class BulletFire extends Bullet {
-
+    
     private Animation _forwardBulletAni, _backBulletAni;
-
+    
     public BulletFire(float x, float y, GameWorld gameWorld) {
         super(x, y, 60, 30, 1.0f, 10, gameWorld);
         _forwardBulletAni = CacheDataLoader.getInstance().getAnimation("bluefire");
         _backBulletAni = CacheDataLoader.getInstance().getAnimation("bluefire");
         _backBulletAni.flipAllImage();
     }
-
+    
     @Override
     public void update() {
         // Vien dan da no xong thi moi cho bay
         if (_forwardBulletAni.isIgnoreFrame(0) || _backBulletAni.isIgnoreFrame(0)) {
             setPosX(getPosX() + getSpeedX());
         }
-
+        super.update();
+//        ParticularModel object = getGameWorld().getParticularModelManager().getCollisionWithEnemyModel(this);
+//        if (object != null
+//                && object.getState() == ALIVE) {
+//            setBlood(0);
+//            object.setBlood(object.getBlood() - getDamge());
+//            object.setState(BEHURT);
+//        }
+        
     }
-
+    
     @Override
     public void draw(Graphics2D g2) {
         if (getSpeedX() > 0) {
             // Vien dan no mat hinh 3 thi khong cho lap lai may khung hinh dau tien nay
-            if (!_forwardBulletAni.isIgnoreFrame(0) && _forwardBulletAni.isIgnoreFrame(3)) {
+            if (!_forwardBulletAni.isIgnoreFrame(0) && _forwardBulletAni.getCurrentFrame() == 3) {
+                _forwardBulletAni.setIgnoreFrames(0);
                 _forwardBulletAni.setIgnoreFrames(1);
                 _forwardBulletAni.setIgnoreFrames(2);
-                _forwardBulletAni.setIgnoreFrames(3);
             }
             _forwardBulletAni.update(System.nanoTime());
             _forwardBulletAni.draw(
@@ -49,9 +57,9 @@ public class BulletFire extends Bullet {
                     g2
             );
         } else {
-            if (!_backBulletAni.isIgnoreFrame(0) && _backBulletAni.isIgnoreFrame(3)) {
+            if (!_backBulletAni.isIgnoreFrame(0) && _backBulletAni.getCurrentFrame() == 3) {
+                _backBulletAni.setIgnoreFrames(0);
                 _backBulletAni.setIgnoreFrames(1);
-                _backBulletAni.setIgnoreFrames(2);
                 _backBulletAni.setIgnoreFrames(3);
             }
             _backBulletAni.update(System.nanoTime());
@@ -62,14 +70,14 @@ public class BulletFire extends Bullet {
             );
         }
     }
-
+    
     @Override
     public Rectangle getBoundForCollisionWithEnemy() {
         return getBoundForCollisionWithMap();
     }
-
+    
     @Override
     public void attack() {
     }
-
+    
 }

@@ -7,15 +7,10 @@ package na.models;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 import na.effects.Animation;
 import na.handle.CacheDataLoader;
+import na.handle.SoundsHandle;
 
 /**
  *
@@ -30,7 +25,7 @@ public class Megaman extends Human {
     private Animation _dickForwardAni, _dickBackAni;
     private Animation _flyForwardAni, _flyBackAni, _flyShootingForwardAni, _flyShootingBackAni;
     private Animation _landingForwardAni, _landingBackAni;
-    private Animation _beHurtForwardAni, _beHurtBackAni;
+//    private Animation _beHurtForwardAni, _beHurtBackAni;
 
     private Animation _climbWallForwardAni, _climbWallBackAni;
 
@@ -44,7 +39,7 @@ public class Megaman extends Human {
         super(x, y, 70, 90, 0.1f, 100, gameWorld);
         setTeamType(LEAGUE_TEAM);
         setTimeForNoBeHurt(2000 * 1000000);
-        setDirection(RIGHT_DIR);
+        setDirection(RIGHT_DIR);        
 
         _runForwardAni = CacheDataLoader.getInstance().getAnimation("run");
         _runBackAni = CacheDataLoader.getInstance().getAnimation("run");
@@ -87,6 +82,9 @@ public class Megaman extends Human {
         _beHurtForwardAni = CacheDataLoader.getInstance().getAnimation("hurting");
         _beHurtBackAni = CacheDataLoader.getInstance().getAnimation("hurting");
         _beHurtBackAni.flipAllImage();
+
+        _shootingSound = CacheDataLoader.getInstance().getSounds("bluefireshooting");
+        _hurtingSound = CacheDataLoader.getInstance().getSounds("megamanhurt");
 
     }
 
@@ -186,6 +184,7 @@ public class Megaman extends Human {
         } else {
             rect.height = 80;
         }
+//        System.out.println("lay thong tin ne");
         return rect;
 
     }
@@ -193,151 +192,152 @@ public class Megaman extends Human {
     @Override
     public void draw(Graphics2D g2) {
         switch (getState()) {
-            case ALIVE:
             case NOBEHURT:
+                if ((System.nanoTime() / 10000000) % 2 != 1) {
+                    return;
+                }
+            case ALIVE:
+
                 // Cai tg lam cho con nhan vat nhap nhay
-                if (getState() == NOBEHURT && ((System.nanoTime() / 10000000) % 2 != 1)) {
-                    System.out.println("flash");
-                } else {
-                    if (getIsLanding()) {
-                        if (getDirection() == RIGHT_DIR) {
-                            _landingForwardAni.setCurrentFrame(_landingBackAni.getCurrentFrame());
-                            _landingForwardAni.draw(
-                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                    (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _landingForwardAni.getCurrentImage().getHeight())),
-                                    g2
-                            );
+                if (getIsLanding()) {
+                    if (getDirection() == RIGHT_DIR) {
+                        _landingForwardAni.setCurrentFrame(_landingBackAni.getCurrentFrame());
+                        _landingForwardAni.draw(
+                                (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _landingForwardAni.getCurrentImage().getHeight())),
+                                g2
+                        );
 
-                        } else {
-                            _landingBackAni.draw(
-                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                    (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _landingBackAni.getCurrentImage().getHeight())),
-                                    g2
-                            );
-                        }
-                    } else if (getIsJumping()) {
-                        if (getDirection() == RIGHT_DIR) {
-                            _flyForwardAni.update(System.nanoTime());
-                            if (_isShooting) {
-                                _flyShootingForwardAni.setCurrentFrame(_flyShootingForwardAni.getCurrentFrame());
-                                _flyShootingForwardAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX() + 10),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            } else {
-                                _flyForwardAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            }
-                        } else {
-                            _flyBackAni.update(System.nanoTime());
-                            if (_isShooting) {
-                                _flyShootingBackAni.setCurrentFrame(_flyShootingBackAni.getCurrentFrame());
-                                _flyShootingBackAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX() - 10),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-
-                            } else {
-                                _flyBackAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            }
-                        }
-                    } else if (getIsDicking()) {
-                        if (getDirection() == RIGHT_DIR) {
-                            _dickForwardAni.update(System.nanoTime());
-                            _dickForwardAni.draw(
-                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                    (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _dickForwardAni.getCurrentImage().getHeight() / 2)),
+                    } else {
+                        _landingBackAni.draw(
+                                (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _landingBackAni.getCurrentImage().getHeight())),
+                                g2
+                        );
+                    }
+                } else if (getIsJumping()) {
+                    if (getDirection() == RIGHT_DIR) {
+                        _flyForwardAni.update(System.nanoTime());
+                        if (_isShooting) {
+                            _flyShootingForwardAni.setCurrentFrame(_flyShootingForwardAni.getCurrentFrame());
+                            _flyShootingForwardAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX() + 10),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
                                     g2
                             );
                         } else {
-                            _dickBackAni.update(System.nanoTime());
-                            _dickBackAni.draw(
+                            _flyForwardAni.draw(
                                     (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                    (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _dickBackAni.getCurrentImage().getHeight() / 2)),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
                                     g2
                             );
                         }
                     } else {
-                        if (getSpeedX() > 0) {
-                            _runForwardAni.update(System.nanoTime());
-                            if (_isShooting) {
-                                _runShootingForwardAni.setCurrentFrame(_runForwardAni.getCurrentFrame());
-                                _runShootingForwardAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            } else {
-                                _runForwardAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            }
-                        } else if (getSpeedX() < 0) {
-                            _runBackAni.update(System.nanoTime());
-                            if (_isShooting) {
-                                _runShootingBackAni.setCurrentFrame(_runBackAni.getCurrentFrame());
-                                _runShootingBackAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            } else {
-                                _runBackAni.draw(
-                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                        g2
-                                );
-                            }
+                        _flyBackAni.update(System.nanoTime());
+                        if (_isShooting) {
+                            _flyShootingBackAni.setCurrentFrame(_flyShootingBackAni.getCurrentFrame());
+                            _flyShootingBackAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX() - 10),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
 
                         } else {
-                            if (getDirection() == RIGHT_DIR) {
-                                if (_isShooting) {
-                                    _idleShootingForwardAni.update(System.nanoTime());
-                                    _idleShootingForwardAni.draw(
-                                            (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                            (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                            g2
-                                    );
+                            _flyBackAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
+                        }
+                    }
+                } else if (getIsDicking()) {
+                    if (getDirection() == RIGHT_DIR) {
+                        _dickForwardAni.update(System.nanoTime());
+                        _dickForwardAni.draw(
+                                (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _dickForwardAni.getCurrentImage().getHeight() / 2)),
+                                g2
+                        );
+                    } else {
+                        _dickBackAni.update(System.nanoTime());
+                        _dickBackAni.draw(
+                                (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                (int) (getPosY() - getGameWorld().getCamera().getPosY() + (getBoundForCollisionWithMap().height / 2 - _dickBackAni.getCurrentImage().getHeight() / 2)),
+                                g2
+                        );
+                    }
+                } else {
+                    if (getSpeedX() > 0) {
+                        _runForwardAni.update(System.nanoTime());
+                        if (_isShooting) {
+                            _runShootingForwardAni.setCurrentFrame(_runForwardAni.getCurrentFrame());
+                            _runShootingForwardAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
+                        } else {
+                            _runForwardAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
+                        }
+                    } else if (getSpeedX() < 0) {
+                        _runBackAni.update(System.nanoTime());
+                        if (_isShooting) {
+                            _runShootingBackAni.setCurrentFrame(_runBackAni.getCurrentFrame());
+                            _runShootingBackAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
+                        } else {
+                            _runBackAni.draw(
+                                    (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                    (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                    g2
+                            );
+                        }
 
-                                } else {
-                                    _idleForwardAni.update(System.nanoTime());
-                                    _idleForwardAni.draw(
-                                            (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                            (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                            g2
-                                    );
-                                }
+                    } else {
+                        if (getDirection() == RIGHT_DIR) {
+                            if (_isShooting) {
+                                _idleShootingForwardAni.update(System.nanoTime());
+                                _idleShootingForwardAni.draw(
+                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                        g2
+                                );
+
                             } else {
-                                if (_isShooting) {
-                                    _idleShootingBackAni.update(System.nanoTime());
-                                    _idleShootingBackAni.draw(
-                                            (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                            (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                            g2
-                                    );
-                                } else {
-                                    _idleBackAni.draw(
-                                            (int) (getPosX() - getGameWorld().getCamera().getPosX()),
-                                            (int) (getPosY() - getGameWorld().getCamera().getPosY()),
-                                            g2
-                                    );
-                                }
+                                _idleForwardAni.update(System.nanoTime());
+                                _idleForwardAni.draw(
+                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                        g2
+                                );
+                            }
+                        } else {
+                            if (_isShooting) {
+                                _idleShootingBackAni.update(System.nanoTime());
+                                _idleShootingBackAni.draw(
+                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                        g2
+                                );
+                            } else {
+                                _idleBackAni.draw(
+                                        (int) (getPosX() - getGameWorld().getCamera().getPosX()),
+                                        (int) (getPosY() - getGameWorld().getCamera().getPosY()),
+                                        g2
+                                );
                             }
                         }
                     }
                 }
                 break;
+
             case BEHURT:
                 if (getDirection() == RIGHT_DIR) {
                     _beHurtForwardAni.draw(
@@ -360,31 +360,46 @@ public class Megaman extends Human {
             default:
                 break;
         }
-        drawBoundForCollsionWithMap(g2);
+//        drawBoundForCollsionWithMap(g2);
     }
 
     @Override
     public void attack() {
         if (!_isShooting && !getIsDicking()) {
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        Clip clip = AudioSystem.getClip();
-                        clip.open(_shootingSound);
-                        clip.start();
-                    } catch (LineUnavailableException ex) {
-                        Logger.getLogger(Megaman.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IOException ex) {
-                        Logger.getLogger(Megaman.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+            SoundsHandle.getInstance().playSound("bluefireshooting");
+
+            Bullet bullet = new BulletFire(getPosX(), getPosY(), getGameWorld());
+            if (getDirection() == LEFT_DIR) {
+                bullet.setSpeedX(-10);
+                if (getSpeedX() != 0 && getSpeedY() == 0) {
+                    bullet.setPosX(bullet.getPosX() - 20);
+                    bullet.setPosY(bullet.getPosY() - 5);
+                } else {
+                    bullet.setPosX(bullet.getPosX() - 40);
                 }
-            });
+            } else {
+                bullet.setSpeedX(10);
+                if (getSpeedX() != 0 && getSpeedY() == 0) {
+                    bullet.setPosX(bullet.getPosX() + 20);
+                    bullet.setPosY(bullet.getPosY() - 5);
+                } else {
+                    bullet.setPosX(bullet.getPosX() + 40);
+                }
+            }
+            if (getIsJumping()) {
+                bullet.setPosY(bullet.getPosY() - 20);
+            }
+            bullet.setTeamType(getTeamType());
+            getGameWorld().getBulletManager().addModel(bullet);
+
+            _lastShootingTime = System.nanoTime();
+            _isShooting = true;
 
         }
     }
 
     @Override
     public void hurtingCallback() {
-
+        SoundsHandle.getInstance().playSound("megamanhurt");
     }
 }

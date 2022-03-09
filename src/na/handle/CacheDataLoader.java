@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import na.effects.Animation;
 import na.effects.FrameImage;
 
@@ -29,11 +31,11 @@ public class CacheDataLoader {
     private final String _animationFile = "src/na/media/images/animation.txt";
     private final String _physMapFile = "src/na/media/images/phys_map.txt";
     private final String _backGroundMapFile = "src/na/media/images/background_map.txt";
-    private final String _SoundFile = "scr/na/media/images/sounds.txt";
+    private final String _SoundFile = "src/na/media/sounds/sounds.txt";
 
     private Hashtable<String, FrameImage> _frameImages;
     private Hashtable<String, Animation> _animations;
-    private Hashtable<String, AudioInputStream> _sounds;
+    private Hashtable<String, File> _sounds;
 
     private int[][] _phys_map;
     private int[][] _background_map;
@@ -51,10 +53,82 @@ public class CacheDataLoader {
     }
 
     public void loadData() {
-        loadFrame();
-        loadAnimation();
-        loadPhysicalMap();
-        loadBackgroundMap();
+        Thread t1 = new Thread() {
+            public void run() {
+                loadFrame();
+                loadAnimation();
+            }
+        };
+        Thread t2 = new Thread() {
+            public void run() {
+                loadPhysicalMap();
+            }
+        };
+
+        Thread t3 = new Thread() {
+            public void run() {
+                loadBackgroundMap();
+            }
+        };
+        Thread t4 = new Thread() {
+            public void run() {
+                loadSounds();
+            }
+        };
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+        try {
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void loadSounds() {
+        try {            
+            _sounds = new Hashtable<>();
+
+            FileReader fr = new FileReader(_SoundFile);
+            BufferedReader br = new BufferedReader(fr);
+
+            String line = null;
+
+            if (br.readLine() == null) {
+                System.out.println("No data");
+            } else {
+                fr = new FileReader(_SoundFile);
+                br = new BufferedReader(fr);
+
+                while ((line = br.readLine()).equals(""));
+
+                int n = Integer.parseInt(line);
+                for (int i = 0; i < n; i++) {
+//                    Media m = null;
+                    AudioInputStream ai = null;
+
+                    while ((line = br.readLine()).equals(""));
+
+                    String[] str = line.split(" ");
+
+                    String name = str[0];
+
+                    String path = str[1];
+
+                    _sounds.put(name, new File(path));
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public void loadPhysicalMap() {
@@ -222,13 +296,26 @@ public class CacheDataLoader {
                     _background_map[i][j] = Integer.parseInt(str[j]);
                 }
             }
-            
+
         } catch (FileNotFoundException ex) {
             Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    public AudioInputStream getSounds(String name) {
+        try {
+            synchronized (_sounds) {
+                return AudioSystem.getAudioInputStream(_sounds.get(name));
+            }
+        } catch (UnsupportedAudioFileException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public FrameImage getFrameImage(String name) {
