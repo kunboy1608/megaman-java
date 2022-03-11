@@ -5,10 +5,7 @@
  */
 package na.views;
 
-import java.awt.event.KeyListener;
 import javax.swing.JFrame;
-import na.handle.CacheDataLoader;
-import na.handle.InputManager;
 
 /**
  *
@@ -16,8 +13,8 @@ import na.handle.InputManager;
  */
 public class GameFrame extends JFrame {
 
-    public static final int SCREEN_WIDTH = 1280;
-    public static final int SCREEN_HEIGHT = 720;
+    public static final int SCREEN_WIDTH = 1080;
+    public static final int SCREEN_HEIGHT = 680;
 
     public GameFrame() {
         initComponents();
@@ -28,15 +25,15 @@ public class GameFrame extends JFrame {
         //Properties Frame
         setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        setResizable(false);
+        setTitle("Megaman - JDK17");
+        setResizable(false);
 
         // Can Frame giua man hinh        
         setLocationRelativeTo(null);
 
         // Add Components
         GamePanel panel = new GamePanel();
-        add(panel);        
-        setVisible(true);                      
+        add(panel);
+        setVisible(true);
     }
-
 }

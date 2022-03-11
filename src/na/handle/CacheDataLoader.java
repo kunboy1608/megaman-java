@@ -6,13 +6,19 @@
 package na.handle;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import na.effects.Animation;
 import na.effects.FrameImage;
 
@@ -22,15 +28,16 @@ import na.effects.FrameImage;
  */
 public class CacheDataLoader {
 
-    private final String _frameFile = "src/na/media/images/frame.txt";
-    private final String _animationFile = "src/na/media/images/animation.txt";
-    private final String _physMapFile = "src/na/media/images/phys_map.txt";
-    private final String _backGroundMapFile = "scr/na/media/images/background_map.txt";
-    private final String _SoundFile = "scr/na/media/iamges/sounds.txt";
+    private final String _frameFile = "/na/media/images/frame.txt";
+    private final String _animationFile = "/na/media/images/animation.txt";
+    private final String _physMapFile = "/na/media/images/phys_map.txt";
+    private final String _backGroundMapFile = "/na/media/images/background_map.txt";
+//    private final String _SoundFile = "/na/media/sounds/sounds.txt";
+    private final String _SoundFile = "/na/media/sounds/sounds.txt";
 
     private Hashtable<String, FrameImage> _frameImages;
     private Hashtable<String, Animation> _animations;
-    private Hashtable<String, AudioInputStream> _sounds;
+    private Hashtable<String, String> _sounds;
 
     private int[][] _phys_map;
     private int[][] _background_map;
@@ -48,15 +55,88 @@ public class CacheDataLoader {
     }
 
     public void loadData() {
-//        loadFrame();
-//        loadAnimation();
-        loadPhysicalMap();
+        Thread t1 = new Thread() {
+            public void run() {
+                loadFrame();
+                loadAnimation();
+            }
+        };
+        Thread t2 = new Thread() {
+            public void run() {
+                loadPhysicalMap();
+            }
+        };
+
+        Thread t3 = new Thread() {
+            public void run() {
+                loadBackgroundMap();
+            }
+        };
+        Thread t4 = new Thread() {
+            public void run() {
+                loadSounds();
+            }
+        };
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+        try {
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void loadSounds() {
+        try {
+            _sounds = new Hashtable<>();
+
+            InputStream inputStream = getClass().getResourceAsStream(_SoundFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            if (br.readLine() == null) {
+                System.out.println("No data");
+            } else {
+                inputStream = getClass().getResourceAsStream(_SoundFile);
+                br = new BufferedReader(new InputStreamReader(inputStream));
+
+                while ((line = br.readLine()).equals(""));
+
+                int n = Integer.parseInt(line);
+                for (int i = 0; i < n; i++) {
+//                    Media m = null;
+                    AudioInputStream ai = null;
+
+                    while ((line = br.readLine()).equals(""));
+
+                    String[] str = line.split(" ");
+
+                    String name = str[0];
+
+                    String path = str[1];
+
+                    _sounds.put(name, path);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     public void loadPhysicalMap() {
         try {
-            FileReader fr = new FileReader(_physMapFile);
-            BufferedReader br = new BufferedReader(fr);
+            InputStream inputSteram = getClass().getResourceAsStream(_physMapFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputSteram));
 
             String line = null;
 
@@ -85,9 +165,9 @@ public class CacheDataLoader {
     public void loadFrame() {
         try {
             _frameImages = new Hashtable<>();
-            FileReader fr = new FileReader(_frameFile);
 
-            BufferedReader br = new BufferedReader(fr);
+            InputStream inputStream = getClass().getResourceAsStream(_frameFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
             String line = null;
 
@@ -96,8 +176,8 @@ public class CacheDataLoader {
                 throw new IOException();
             } else {
                 // Dua con tro ve dau file
-                fr = new FileReader(_frameFile);
-                br = new BufferedReader(fr);
+                inputStream = getClass().getResourceAsStream(_frameFile);
+                br = new BufferedReader(new InputStreamReader(inputStream));
 
                 // Bo qua cach dong trong o dau file
                 while ((line = br.readLine()).equals(""));
@@ -135,7 +215,7 @@ public class CacheDataLoader {
                     str = line.split(" ");
                     int h = Integer.parseInt(str[1]);
 
-                    BufferedImage imageData = ImageIO.read(new File(path));
+                    BufferedImage imageData = ImageIO.read(getClass().getResourceAsStream(path));
                     BufferedImage image = imageData.getSubimage(x, y, w, h);
                     frame.setImage(image);
 
@@ -154,8 +234,9 @@ public class CacheDataLoader {
         try {
 
             _animations = new Hashtable<>();
-            FileReader fr = new FileReader(_animationFile);
-            BufferedReader br = new BufferedReader(fr);
+
+            InputStream inputSteam = getClass().getResourceAsStream(_animationFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputSteam));
 
             String line = null;
 
@@ -164,9 +245,8 @@ public class CacheDataLoader {
                 throw new IOException();
             } else {
                 // Dua con tro ve dau file
-                fr = new FileReader(_animationFile);
-                br = new BufferedReader(fr);
-
+                inputSteam = getClass().getResourceAsStream(_animationFile);
+                br = new BufferedReader(new InputStreamReader(inputSteam));
                 // Bo qua cach dong trong o dau file
                 while ((line = br.readLine()).equals(""));
 
@@ -185,8 +265,7 @@ public class CacheDataLoader {
                     for (int j = 0; j < str.length; j += 2) {
                         ani.add(getFrameImage(str[j]), Double.parseDouble(str[j + 1]));
                     }
-
-                    _instance._animations.put(ani.getName(), ani);
+                    _animations.put(ani.getName(), ani);
                 }
             }
             br.close();
@@ -195,6 +274,48 @@ public class CacheDataLoader {
             ex.printStackTrace();
         }
 
+    }
+
+    public void loadBackgroundMap() {
+
+        try {
+            InputStream inputStream = getClass().getResourceAsStream(_backGroundMapFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            line = br.readLine();
+            int numberOfRows = Integer.parseInt(line);
+            line = br.readLine();
+            int numberOfColumns = Integer.parseInt(line);
+
+            _background_map = new int[numberOfRows][numberOfColumns];
+
+            for (int i = 0; i < numberOfRows; i++) {
+                line = br.readLine();
+                String[] str = line.split(" ");
+                for (int j = 0; j < numberOfColumns; j++) {
+                    _background_map[i][j] = Integer.parseInt(str[j]);
+                }
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public AudioInputStream getSounds(String name) {
+        try {
+            return AudioSystem.getAudioInputStream(new BufferedInputStream(getClass().getResourceAsStream(_sounds.get(name))));
+        } catch (UnsupportedAudioFileException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CacheDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public FrameImage getFrameImage(String name) {
@@ -211,7 +332,7 @@ public class CacheDataLoader {
         return _phys_map;
     }
 
-    public int[][] getBackground_map() {
+    public int[][] getBackgroundMap() {
         return _background_map;
     }
 

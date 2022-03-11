@@ -1,0 +1,7 @@
+5
+
+bluefireshooting /na/media/sounds/bluefireshooting.wav
+redeyeshooting /na/media/sounds/redeyeshooting.wav
+bgmusic /na/media/sounds/bgmusic.wav
+robotRshooting /na/media/sounds/robotRshooting.wav
+megamanhurt /na/media/sounds/megamanhurt.wav

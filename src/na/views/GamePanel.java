@@ -5,7 +5,6 @@
  */
 package na.views;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -14,8 +13,6 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import na.handle.InputManager;
 import na.models.GameWorld;
-import na.models.Megaman;
-import na.models.PhysicalMap;
 
 /**
  *
@@ -54,22 +51,24 @@ public class GamePanel extends JPanel implements Runnable {
                     BufferedImage.TYPE_INT_ARGB
             );
         }
-        _graphicsBuffered = (Graphics2D) _bufferedImage.getGraphics();
+        if (_graphicsBuffered == null) {
+            _graphicsBuffered = (Graphics2D) _bufferedImage.getGraphics();
+        }
 
-        // Ve tren buffered                
-        _graphicsBuffered.setColor(Color.WHITE);
-        _graphicsBuffered.fillRect(0, 0, GameFrame.SCREEN_WIDTH, GameFrame.SCREEN_HEIGHT);
-        _gameWorld.render(_graphicsBuffered);
+        synchronized (_graphicsBuffered) {
+            _gameWorld.render(_graphicsBuffered);
+        }
     }
 
     @Override
     public void paint(Graphics g) {
-        g.drawImage(_bufferedImage, 0, 0, this);
+        synchronized (_graphicsBuffered) {
+            g.drawImage(_bufferedImage, 0, 0, this);
+        }
     }
 
     @Override
     public void run() {
-        int a = 0;
         long beginTime;
         while (true) {
             beginTime = System.currentTimeMillis();
@@ -80,6 +79,7 @@ public class GamePanel extends JPanel implements Runnable {
 
             try {
                 Thread.sleep(beginTime + (1000 / _fps) - System.currentTimeMillis());
+//                Thread.sleep(0);
             } catch (InterruptedException ex) {
                 Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
 

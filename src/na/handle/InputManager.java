@@ -8,8 +8,7 @@ package na.handle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import na.models.GameWorld;
-import na.models.Megaman;
-import na.views.GamePanel;
+import na.models.Human;
 
 /**
  *
@@ -41,30 +40,56 @@ public class InputManager implements KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                _game.getMegaman().setDirection(Megaman.DIR_LEFT);
-                _game.getMegaman().setSpeedX(-5f);
+                _game.getMegaman().setDirection(Human.LEFT_DIR);
+                _game.getMegaman().run();
                 break;
 
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                _game.getMegaman().setDirection(Megaman.DIR_RIGHT);
-                _game.getMegaman().setSpeedX(5f);
+                _game.getMegaman().setDirection(Human.RIGHT_DIR);
+                _game.getMegaman().run();
 
                 break;
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                // Xuong duoi
+                _game.getMegaman().dick();
                 break;
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
                 // Len tren
-                _game.getMegaman().setSpeedY(-3f);
+                _game.getMegaman().jump();
 
                 break;
             case KeyEvent.VK_SPACE:
                 // Nhay
-                _game.getMegaman().setSpeedY(-3f);
+                _game.getMegaman().attack();
 
+                break;
+
+            case KeyEvent.VK_ENTER:
+                if (_game.state == GameWorld.PAUSE_GAME
+                        && _game.previousState == GameWorld.PAUSE_GAME) {
+                    _game.switchState(GameWorld.TUTORIAL);
+                } else if (_game.state == GameWorld.TUTORIAL && _game.storyTutorial >= 1) {
+                    if (_game.storyTutorial <= 3) {
+                        _game.storyTutorial++;
+                        _game.currentSize = 1;
+                        _game.textTutorial = _game.texts1[_game.storyTutorial - 1];
+                    } else {
+                        _game.switchState(GameWorld.PLAY_GAME);
+                    }
+
+                    // for meeting boss tutorial
+                    if (_game.tutorialState == GameWorld.MEET_FINAL_BOSS) {
+                        _game.switchState(GameWorld.PLAY_GAME);
+                    }
+                } else {
+
+                    _game.switchState(GameWorld.PLAY_GAME);
+                }
+                break;
+            case KeyEvent.VK_ESCAPE:
+                _game.switchState(GameWorld.PAUSE_GAME);
                 break;
         }
     }
@@ -74,28 +99,27 @@ public class InputManager implements KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
-                _game.getMegaman().setSpeedX(0f);
+                _game.getMegaman().stopRun();
                 break;
 
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
-                _game.getMegaman().setSpeedX(0f);
+                _game.getMegaman().stopRun();
 
                 break;
 
             case KeyEvent.VK_S:
             case KeyEvent.VK_DOWN:
-                // Xuong duoi
+                _game.getMegaman().standUp();
 
                 break;
             case KeyEvent.VK_W:
             case KeyEvent.VK_UP:
                 // Len tren
-                _game.getMegaman().setSpeedY(0f);
+
                 break;
             case KeyEvent.VK_SPACE:
-                // Nhay
-                _game.getMegaman().setSpeedY(0f);
+                // Nhay               
                 break;
         }
     }
